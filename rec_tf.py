@@ -5,7 +5,7 @@
 # ### - CP factorization on tensor (user, music, context)
 # ### - Written by ByungSoo Jeon, NAVER LABS
 
-# In[48]:
+# In[59]:
 
 # Add system path to use scikit-tensor Library
 import sys
@@ -23,7 +23,7 @@ from scipy import sparse
 
 # ### - Regularized matrix factorization
 
-# In[49]:
+# In[60]:
 
 def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
     Q = Q.T
@@ -51,7 +51,7 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
 
 # ### - Regularized CP tensor factorization (Multiverse Recommendation, RecSys 10)
 
-# In[56]:
+# In[61]:
 
 def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
     e = 0
@@ -90,7 +90,7 @@ def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
 
 # ### - Input utility matrix
 
-# In[57]:
+# In[68]:
 
 def Read_Utility_Matrix():
     # Read meta data to build dictionary in order to change matrix to tensor.
@@ -101,11 +101,16 @@ def Read_Utility_Matrix():
 
     # For now, context is Artist ID
     for line in lines:
-        item = int(line.split("\t")[0])
-        context = int(line.split("\t")[2].split("#")[0])
-        item_context_dic[item] = context
-        if (nContext < context+1) :
-            nContext = context+1
+        try:            
+            item = int(line.split("\t")[0])
+            context = int(line.split("\t")[2])
+        except:
+            pass
+        else:
+            item_context_dic[item] = context
+            if (nContext < context+1) :
+                nContext = context+1
+            
     metadata_file.close()
     
     # Read matrix data
@@ -130,13 +135,14 @@ def Read_Utility_Matrix():
 #     utility_matrix = sparse.coo_matrix((ratings, (users, items)), shape=(nUser, nItem))
     X = np.zeros((nUser,nItem,nContext))
     for i in range(len(users)):
-        X[users[i]][items[i]][item_context_dic[items[i]]] = ratings[i]
+        if items[i] in item_context_dic:
+            X[users[i]][items[i]][item_context_dic[items[i]]] = ratings[i]
     return X
 
 
 # ### - Main function for CP
 
-# In[58]:
+# In[69]:
 
 if __name__ == "__main__":
 #     X = [1,2,3,4,5,6,7,8,9,10,11,12]
