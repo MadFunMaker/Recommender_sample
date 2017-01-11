@@ -51,7 +51,7 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
 
 # ### - Regularized CP tensor factorization (Multiverse Recommendation, RecSys 10)
 
-# In[50]:
+# In[56]:
 
 def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
     e = 0
@@ -80,14 +80,17 @@ def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
 #                             e = e + (beta/2) * (pow(A[i][r],2) + pow(B[j][r],2) + pow(C[k][r],2))
         # Convert error to RMSE
         e = math.sqrt(e/nNnz)
-        if e < 0.001:
+        if e < 0.01:
+            print ("[TF for RS] Target RMSE(0.01) is reached.")
             break
+        if (step%1000==0) :
+            print ("[TF for RS] "+str(step)+"/"+str(steps)+" steps done.")
     return A,B,C,e
 
 
 # ### - Input utility matrix
 
-# In[51]:
+# In[57]:
 
 def Read_Utility_Matrix():
     # Read meta data to build dictionary in order to change matrix to tensor.
@@ -99,7 +102,7 @@ def Read_Utility_Matrix():
     # For now, context is Artist ID
     for line in lines:
         item = int(line.split("\t")[0])
-        context = int(line.split("\t")[2])
+        context = int(line.split("\t")[2].split("#")[0])
         item_context_dic[item] = context
         if (nContext < context+1) :
             nContext = context+1
@@ -133,13 +136,14 @@ def Read_Utility_Matrix():
 
 # ### - Main function for CP
 
-# In[52]:
+# In[58]:
 
 if __name__ == "__main__":
 #     X = [1,2,3,4,5,6,7,8,9,10,11,12]
 #     X = np.array(X)
 #     X = X.reshape(2,2,3)
     X = Read_Utility_Matrix()
+    print ("[TF for RS] Reading ratings, metadata done.")
     R = 2
 
     A = np.random.rand(len(X),R)
@@ -147,7 +151,8 @@ if __name__ == "__main__":
     C = np.random.rand(len(X[0][0]),R)
     
     A, B, C, e = Regularized_CP_TF(X, A, B, C, R)
-    print (e)
+    print ("[TF for RS] RMSE : "+str(e))
+
 #     print (A)
 #     print (B)
 #     print (C)
