@@ -5,15 +5,13 @@
 # ### - CP factorization on tensor (user, music, context)
 # ### - Written by ByungSoo Jeon, NAVER LABS
 
-# In[8]:
+# In[48]:
 
 # Add system path to use scikit-tensor Library
 import sys
-sys.path.append('/Users/jbsimdicd/Library/Python/2.7/lib/python/site-packages')
-
-from scipy.io.matlab import loadmat
 import sktensor as skt
 import numpy as np
+import math
 
 # Set logging to DEBUG to see CP-ALS information
 import logging
@@ -25,7 +23,7 @@ from scipy import sparse
 
 # ### - Regularized matrix factorization
 
-# In[137]:
+# In[49]:
 
 def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
     Q = Q.T
@@ -53,17 +51,19 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
 
 # ### - Regularized CP tensor factorization (Multiverse Recommendation, RecSys 10)
 
-# In[22]:
+# In[50]:
 
 def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
     e = 0
     for step in range(steps):
+        nNnz = 0
         # Stochastic Gradient Descent(SGD) part
         for i in range(len(X)):
             for j in range(len(X[i])):
                 for k in range(len(X[i][j])):
                     if X[i][j][k] > 0:
                         eijk = X[i][j][k] - np.dot(A[i,:],np.multiply(B[j,:],C[k,:]))
+                        nNnz+=1
                         for r in range(R):
                             A[i][r] = A[i][r] + alpha * (2 * eijk * B[j][r] * C[k][r] - beta * A[i][r])
                             B[j][r] = B[j][r] + alpha * (2 * eijk * A[i][r] * C[k][r] - beta * B[j][r])
@@ -78,6 +78,8 @@ def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
                         e = e + pow(X[i][j][k] - np.dot(A[i,:],np.multiply(B[j,:],C[k,:])), 2)
 #                         for r in range(R):
 #                             e = e + (beta/2) * (pow(A[i][r],2) + pow(B[j][r],2) + pow(C[k][r],2))
+        # Convert error to RMSE
+        e = math.sqrt(e/nNnz)
         if e < 0.001:
             break
     return A,B,C,e
@@ -85,7 +87,7 @@ def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
 
 # ### - Input utility matrix
 
-# In[23]:
+# In[51]:
 
 def Read_Utility_Matrix():
     # Read meta data to build dictionary in order to change matrix to tensor.
@@ -131,7 +133,7 @@ def Read_Utility_Matrix():
 
 # ### - Main function for CP
 
-# In[25]:
+# In[52]:
 
 if __name__ == "__main__":
 #     X = [1,2,3,4,5,6,7,8,9,10,11,12]
@@ -156,7 +158,7 @@ if __name__ == "__main__":
 
 # ### - Naive CP tensor factorization 
 
-# In[26]:
+# In[53]:
 
 # if __name__ == "__main__":
 #     # Load Matlab data
