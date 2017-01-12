@@ -53,7 +53,7 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
 
 # In[61]:
 
-def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
+def Regularized_CP_TF(X, A, B, C, R, steps=1000, alpha=0.0002, beta=0.02):
     e = 0
     for step in range(steps):
         nNnz = 0
@@ -80,10 +80,10 @@ def Regularized_CP_TF(X, A, B, C, R, steps=50000, alpha=0.0002, beta=0.02):
 #                             e = e + (beta/2) * (pow(A[i][r],2) + pow(B[j][r],2) + pow(C[k][r],2))
         # Convert error to RMSE
         e = math.sqrt(e/nNnz)
-        if e < 0.01:
-            print ("[TF for RS] Target RMSE(0.01) is reached.")
+        if e < 0.3:
+            print ("[TF for RS] Target RMSE(0.3) is reached.")
             break
-        if (step%1000==0) :
+        if (step%100==0) :
             print ("[TF for RS] "+str(step)+"/"+str(steps)+" steps done.")
     return A,B,C,e
 
@@ -112,6 +112,7 @@ def Read_Utility_Matrix():
                 nContext = context+1
             
     metadata_file.close()
+    print ("[TF for RS] Reading Metadata done.")
     
     # Read matrix data
     rating_file = open("ratings.txt","r")
@@ -149,7 +150,7 @@ if __name__ == "__main__":
 #     X = np.array(X)
 #     X = X.reshape(2,2,3)
     X = Read_Utility_Matrix()
-    print ("[TF for RS] Reading ratings, metadata done.")
+    print ("[TF for RS] Reading ratings done.")
     R = 2
 
     A = np.random.rand(len(X),R)
