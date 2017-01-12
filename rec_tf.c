@@ -8,6 +8,7 @@
 #define nItem 150000
 #define maxNnz 47000000
 #define nTrashStr 100
+#define nRank 2
 
 int main()
 {
@@ -19,19 +20,19 @@ int main()
 
 	// Initialize variables
     FILE *meta_fp;
-    int *dic;
+    int *item_context_dic;
     int item, i;
     char trashStr[nTrashStr];
     char contextStr[nTrashStr];
 
     // Read meta data to build dictionary in order to change matrix to tensor.
     // For now, context is Artist ID
-    dic = (int*) malloc(sizeof(int)*nItem);
+    item_context_dic = (int*) malloc(sizeof(int)*nItem);
     meta_fp = fopen("full_meta_data.txt", "r");
     while (fscanf(meta_fp, "%d\t%s\t%s", &item, trashStr, contextStr) >= 0) {
         int contextLen = strlen(contextStr);
         for (i=0; i<contextLen; ++i) if (!isdigit(contextStr[i])) break;
-        if (i==contextLen) dic[item] = atoi(contextStr);
+        if (i==contextLen) item_context_dic[item] = atoi(contextStr);
 //    	printf("%d\t%s\n", item, contextStr);
     }
     fclose(meta_fp);
@@ -56,11 +57,33 @@ int main()
     // Time Measurement to read data
     end = clock();
     printf("[TS for RS] %f sec spent to read data\n", (double)(end-begin)/CLOCKS_PER_SEC);
-    begin = clock();
+    // begin = clock();
+
     
-    
-    
-    end = clock();
-    printf("[TS for RS] %f sec spent to factorize data\n", (double)(end-begin)/CLOCKS_PER_SEC);
+    // Regularized CP Tensor factorization with SGD optimization
+    // int step;
+    // int steps = 10000;
+    // int j,k,r,idx;
+    // float val;
+    // for (step=0; step<steps; ++step) {
+    //     for (idx=0; idx<nNnz; ++idx) {
+    //         i = users[idx];
+    //         j = items[idx];
+    //         k = item_context_dic[items[idx]];
+    //         val = ratings[idx];
+
+    //         if (val > 0) {
+    //             int predicted_val = 0;
+    //             for (r=0; r<nRank; ++r) {
+    //                 predicted_val += 
+    //             }
+    //             float eijk = val - 
+                
+    //         }
+    //     }
+    // }
+
+    // end = clock();
+    // printf("[TS for RS] %f sec spent to factorize data\n", (double)(end-begin)/CLOCKS_PER_SEC);
     return 0;
 }
