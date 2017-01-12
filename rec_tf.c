@@ -6,7 +6,7 @@
 #include <ctype.h>
 
 #define nItem 150000
-#define maxNnz 10//47000000
+#define maxNnz 47000000
 #define nTrashStr 100
 
 int main()
@@ -19,13 +19,14 @@ int main()
 
 	// Initialize var
     FILE *meta_fp;
-    int dic[nItem];
+    int *dic;
     int item, i;
     char trashStr[nTrashStr];
     char contextStr[nTrashStr];
 
     // Read meta data to build dictionary in order to change matrix to tensor.
     // For now, context is Artist ID
+    dic = (int*) malloc(sizeof(int)*nItem);
     meta_fp = fopen("full_meta_data.txt", "r");
     while (fscanf(meta_fp, "%d\t%s\t%s", &item, trashStr, contextStr) >= 0) {
         int contextLen = strlen(contextStr);
@@ -37,11 +38,14 @@ int main()
     printf("[TF for RS] Item-Context dictionary stored in memory\n");
     
     FILE *rating_fp;
-    int users[maxNnz], items[maxNnz];
-    float ratings[maxNnz];
+    int *users, *items;
+    float *ratings;
 
     // Read rating matrix data
     rating_fp = fopen("train_data", "r");
+    users = (int*) malloc(sizeof(int)*maxNnz);
+    items = (int*) malloc(sizeof(int)*maxNnz);
+    ratings = (float*) malloc(sizeof(float)*maxNnz);
     int nNnz = 0;
     while (fscanf(rating_fp, "%d\t%d\t%f", &users[nNnz], &items[nNnz], &ratings[nNnz]) >= 0) {
 //    	printf("%d\t%d\t%f\n", users[nNnz], items[nNnz], ratings[nNnz]);
