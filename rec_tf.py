@@ -5,7 +5,7 @@
 # ### - CP factorization on tensor (user, music, context)
 # ### - Written by ByungSoo Jeon, NAVER LABS
 
-# In[59]:
+# In[70]:
 
 # Add system path to use scikit-tensor Library
 import sys
@@ -23,7 +23,7 @@ from scipy import sparse
 
 # ### - Regularized matrix factorization
 
-# In[60]:
+# In[71]:
 
 def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
     Q = Q.T
@@ -51,33 +51,37 @@ def matrix_factorization(R, P, Q, K, steps=5000, alpha=0.0002, beta=0.02):
 
 # ### - Regularized CP tensor factorization (Multiverse Recommendation, RecSys 10)
 
-# In[61]:
+# In[92]:
 
-def Regularized_CP_TF(X, A, B, C, R, steps=1000, alpha=0.0002, beta=0.02):
+def Regularized_CP_TF(X, A, B, C, R, steps=10000, alpha=0.0002, beta=0.02):
     e = 0
     for step in range(steps):
         nNnz = 0
         # Stochastic Gradient Descent(SGD) part
-        for i in range(len(X)):
-            for j in range(len(X[i])):
-                for k in range(len(X[i][j])):
-                    if X[i][j][k] > 0:
-                        eijk = X[i][j][k] - np.dot(A[i,:],np.multiply(B[j,:],C[k,:]))
-                        nNnz+=1
-                        for r in range(R):
-                            A[i][r] = A[i][r] + alpha * (2 * eijk * B[j][r] * C[k][r] - beta * A[i][r])
-                            B[j][r] = B[j][r] + alpha * (2 * eijk * A[i][r] * C[k][r] - beta * B[j][r])
-                            C[k][r] = C[k][r] + alpha * (2 * eijk * B[j][r] * A[i][r] - beta * C[k][r])                            
+        for idx in range(len(X)):
+            i = X[idx][0]
+            j = X[idx][1]
+            k = X[idx][2]
+            val = X[idx][3]
+            if val > 0:
+                eijk = val - np.dot(A[i,:],np.multiply(B[j,:],C[k,:]))
+                nNnz+=1
+                for r in range(R):
+                    A[i][r] = A[i][r] + alpha * (2 * eijk * B[j][r] * C[k][r] - beta * A[i][r])
+                    B[j][r] = B[j][r] + alpha * (2 * eijk * A[i][r] * C[k][r] - beta * B[j][r])
+                    C[k][r] = C[k][r] + alpha * (2 * eijk * B[j][r] * A[i][r] - beta * C[k][r])                            
         
         # Stop condition for SGD
         e = 0
-        for i in range(len(X)):
-            for j in range(len(X[i])):
-                for k in range(len(X[i][j])):
-                    if X[i][j][k] > 0:
-                        e = e + pow(X[i][j][k] - np.dot(A[i,:],np.multiply(B[j,:],C[k,:])), 2)
-#                         for r in range(R):
-#                             e = e + (beta/2) * (pow(A[i][r],2) + pow(B[j][r],2) + pow(C[k][r],2))
+        for idx in range(len(X)):
+            i = X[idx][0]
+            j = X[idx][1]
+            k = X[idx][2]
+            val = X[idx][3]
+            if val > 0:
+                e = e + pow(val - np.dot(A[i,:],np.multiply(B[j,:],C[k,:])), 2)
+#                 for r in range(R):
+#                     e = e + (beta/2) * (pow(A[i][r],2) + pow(B[j][r],2) + pow(C[k][r],2))
         # Convert error to RMSE
         e = math.sqrt(e/nNnz)
         if e < 0.3:
@@ -90,7 +94,7 @@ def Regularized_CP_TF(X, A, B, C, R, steps=1000, alpha=0.0002, beta=0.02):
 
 # ### - Input utility matrix
 
-# In[68]:
+# In[93]:
 
 def Read_Utility_Matrix():
     # Read meta data to build dictionary in order to change matrix to tensor.
@@ -115,7 +119,7 @@ def Read_Utility_Matrix():
     print ("[TF for RS] Reading Metadata done.")
     
     # Read matrix data
-    rating_file = open("ratings.txt","r")
+    rating_file = open("train_data","r")
     lines = rating_file.readlines()
     users, items, ratings = [], [], []
     nUser, nItem = 0, 0
@@ -133,29 +137,32 @@ def Read_Utility_Matrix():
             nItem = item+1
             
     rating_file.close()
-#     utility_matrix = sparse.coo_matrix((ratings, (users, items)), shape=(nUser, nItem))
-    X = np.zeros((nUser,nItem,nContext))
+    
+    print ("# of User, Item, Context : "+str(nUser)+", "+str(nItem)+", "+str(nContext))
+    
+    X =[]
     for i in range(len(users)):
-        if items[i] in item_context_dic:
-            X[users[i]][items[i]][item_context_dic[items[i]]] = ratings[i]
-    return X
+        if items[i] in item_context_dic: # If there is no context information, exclude it.
+            X.append([users[i], items[i], item_context_dic[items[i]], ratings[i]])
+    return nUser, nItem, nContext, X
 
 
 # ### - Main function for CP
 
-# In[69]:
+# In[94]:
 
 if __name__ == "__main__":
 #     X = [1,2,3,4,5,6,7,8,9,10,11,12]
 #     X = np.array(X)
 #     X = X.reshape(2,2,3)
-    X = Read_Utility_Matrix()
+
+    nUser, nItem, nContext, X = Read_Utility_Matrix()
     print ("[TF for RS] Reading ratings done.")
     R = 2
 
-    A = np.random.rand(len(X),R)
-    B = np.random.rand(len(X[0]),R)
-    C = np.random.rand(len(X[0][0]),R)
+    A = np.random.rand(nUser,R)
+    B = np.random.rand(nItem,R)
+    C = np.random.rand(nContext,R)
     
     A, B, C, e = Regularized_CP_TF(X, A, B, C, R)
     print ("[TF for RS] RMSE : "+str(e))
