@@ -12,12 +12,12 @@
 int main()
 {
 
-	//Time Measurement
+	//Time measurement
 	clock_t begin;
 	clock_t end;
 	begin = clock();
 
-	// Initialize var
+	// Initialize variables
     FILE *meta_fp;
     int *dic;
     int item, i;
@@ -56,6 +56,11 @@ int main()
     // Time Measurement to read data
     end = clock();
     printf("[TS for RS] %f sec spent to read data\n", (double)(end-begin)/CLOCKS_PER_SEC);
-
+    begin = clock();
+    
+    
+    
+    end = clock();
+    printf("[TS for RS] %f sec spent to factorize data\n", (double)(end-begin)/CLOCKS_PER_SEC);
     return 0;
 }
