@@ -39,11 +39,15 @@ int main()
     // For now, context is Artist ID
     item_context_dic = (int*) malloc(sizeof(int)*nItem);
     meta_fp = fopen("full_meta_data.txt", "r");
+    int cnt =0;
     while (fscanf(meta_fp, "%d\t%s\t%s", &item, trashStr, contextStr) >= 0) {
         int contextLen = strlen(contextStr);
         for (i=0; i<contextLen; ++i) if (!isdigit(contextStr[i])) break;
-        if (i==contextLen) item_context_dic[item] = atoi(contextStr);
-    	// printf("%d\t%s\n", item, contextStr);
+        if (i==contextLen) {
+            item_context_dic[item] = atoi(contextStr);
+            if (cnt%10000==0) printf("%d\t%s\n", item, contextStr);
+            ++cnt;
+        }
     }
     fclose(meta_fp);
     printf("[TF for RS] Item-Context dictionary stored in memory\n");
@@ -89,6 +93,11 @@ int main()
     int steps = epoch;
     int k,r,idx;
     float val, rmse_error;
+
+    end = clock();
+    printf("[TS for RS] %f sec spent to initialize factor matrices\n", (double)(end-begin)/CLOCKS_PER_SEC);
+    begin = clock();
+
 
     // Check for optimization algoirhtm to converge
     int history_size = 1000;
