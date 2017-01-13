@@ -5,12 +5,12 @@
 #include <time.h>
 #include <ctype.h>
 
-#define nUser 5//420000
-#define nContext 5//1500000
-#define nItem 5//150000
-#define maxNnz 5//47000000
-#define nTrashStr 100
-#define nRank 2//100
+#define nUser 420000
+#define nContext 1500000
+#define nItem 150000
+#define maxNnz 47000000
+#define nTrashStr 1000
+#define nRank 100
 #define alpha 0.0002
 #define lambda 0.02
 #define epoch 10000
