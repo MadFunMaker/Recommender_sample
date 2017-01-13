@@ -39,6 +39,8 @@ int main()
     // For now, context is Artist ID
     item_context_dic = (int*) malloc(sizeof(int)*nItem);
     meta_fp = fopen("full_meta_data.txt", "r");
+    printf("[TF for RS] Metadata file opened\n");
+    
     int cnt =0;
     while (fscanf(meta_fp, "%d\t%s\t%s", &item, trashStr, contextStr) >= 0) {
         int contextLen = strlen(contextStr);
